@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const User = require('../models/user');
 const verifyToken = require('../middleware/auth');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 // Ruta de registro
@@ -88,6 +88,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
+//Para probar el uso de JWT
 router.get('/profile', verifyToken, async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
@@ -95,6 +96,11 @@ router.get('/profile', verifyToken, async (req, res) => {
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
+});
+
+//Ruta de cierre de sesión
+router.post('/logout', (req, res) => {
+    res.json({ error: null, message: 'Sesión cerrada con éxito' });
 });
 
 module.exports = router;

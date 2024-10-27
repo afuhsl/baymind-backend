@@ -1,13 +1,10 @@
 const mongoose = require("mongoose");
 
-const MONGO_URI = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@clusterbaymind.do2eg.mongodb.net/?retryWrites=true&w=majority&appName=ClusterBayMind`
-
 
 const dbconnection = async () =>{
     try {
-        await mongoose.connect(MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+        await mongoose.connect(process.env.MONGO_URI,{
+
         });
         console.log('Conectado a MongoDB');
     } catch (error) {
