@@ -96,40 +96,61 @@ router.post('/login', async (req, res) => {
 //Guardar respuestas
 router.post('/answers', async (req, res) => {
     try {
-        const userId = req.user.userId;
-        const { answers } = req.body;
-  
-        if (!answers || !answers.name || !answers.age || answers.isWorking === undefined || answers.isStudying === undefined || !answers.appUsageReason) {
-            return res.status(400).json({
-            success: false,
-            message: 'Formato de respuestas inválido o incompleto'
-            });
-        }
-  
-      // Buscar el usuario
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({
-            success: false,
-            message: 'Usuario no encontrado'
-            });
-        }
-      // Guardar las respuestas
-        user.answers = answers;
-        await user.save();
-        res.status(200).json({
-            success: true,
-            message: 'Respuestas guardadas exitosamente'
+      // Verifica si el token ha sido verificado correctamente en el middleware
+      if (!req.user || !req.user.userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Acceso denegado, no se encontró el usuario asociado al token',
         });
+      }
+  
+      const userId = req.user.userId;
+      const { answers } = req.body;
+  
+      // Validación de las respuestas
+      if (!answers || 
+          !answers.name || 
+          !answers.age || 
+          answers.isWorking === undefined || 
+          answers.isStudying === undefined || 
+          !answers.appUsageReason) {
+        return res.status(400).json({
+          success: false,
+          message: 'Formato de respuestas inválido o incompleto. Por favor, asegúrese de enviar todos los campos requeridos.',
+        });
+      }
+  
+      // Buscar el usuario en la base de datos
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Usuario no encontrado',
+        });
+      }
+  
+      // Guardar las respuestas en el perfil del usuario
+      user.answers = answers;
+      await user.save();
+  
+      // Respuesta exitosa
+      res.status(200).json({
+        success: true,
+        message: 'Respuestas guardadas exitosamente',
+      });
     } catch (error) {
-        console.error('Error al guardar respuestas:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error al guardar respuestas',
-            error: error.message || 'Error desconocido'
-        });
+      console.error('Error al guardar respuestas:', error);
+  
+      // Respuesta de error detallada para el cliente
+      res.status(500).json({
+        success: false,
+        message: 'Error al guardar respuestas',
+        error: error.message || 'Error desconocido',
+      });
     }
-});  
+  });
+  
+
 //Obtener Respuestas
 router.get('/answers/:userId', async (req, res) => { 
     try { 
