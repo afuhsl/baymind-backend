@@ -54,17 +54,22 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         // Verificar si el usuario existe
-        const user = await User.findOne({ email: req.body.email });
+        const user = await User.findOne({ email: req.body.email }).select('+password');
         if (!user) {
             return res.status(400).json({ error: 'Email o contraseña incorrectos' });
         }
 
+        console.log("Contraseña enviada:", req.body.password);  // Verifica si la contraseña está siendo enviada correctamente
+        console.log("Contraseña almacenada:", user.password);
+
         // Verificar contraseña
         const validPassword = await bcrypt.compare(req.body.password, user.password);
+        console.log("Contraseña válida:", validPassword);
+
         if (!validPassword) {
             return res.status(400).json({ error: 'Email o contraseña incorrectos' });
         }
-
+        
         // Crear y asignar token
         const token = jwt.sign(
             { _id: user._id },
