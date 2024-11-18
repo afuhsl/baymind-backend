@@ -43,13 +43,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    birthdate:{type: Date},
-    genero:{type:String},
-    estudia:{type:Boolean},
-    trabajo:{type:Boolean},
-    razonUso: {type:String},
-    haceTerapia: {type:Boolean},
-    estadoAnimo:{},
+    answers: {
+        name: { type: String, required: true },
+        age: { type: Number, required: true },
+        isWorking: { type: Boolean, required: true },
+        isStudying: { type: Boolean, required: true },
+        appUsageReason: { type: String, required: true },  
+    },
 
     resetPasswordToken: String,
     resetPasswordExpire: Date

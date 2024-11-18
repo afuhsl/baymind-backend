@@ -99,13 +99,14 @@ router.post('/answers', async (req, res) => {
         const userId = req.user.userId;
         const { answers } = req.body; 
         
-        if (!answers || !Array.isArray(answers)) { 
+        if (!answers || !answers.name || !answers.age || answers.isWorking === undefined || answers.isStudying === undefined || !answers.appUsageReason) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'Formato de respuestas inválido' 
-            }); 
-        } 
+                message: 'Formato de respuestas inválido o incompleto' 
+            });
+        }
         
+        //Buscar el usuario
         const user = await User.findById(userId); 
         if (!user) { 
             return res.status(404).json({ 
