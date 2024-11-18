@@ -97,40 +97,39 @@ router.post('/login', async (req, res) => {
 router.post('/answers', async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { answers } = req.body; 
-        
+        const { answers } = req.body;
+  
         if (!answers || !answers.name || !answers.age || answers.isWorking === undefined || answers.isStudying === undefined || !answers.appUsageReason) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Formato de respuestas inválido o incompleto' 
+            return res.status(400).json({
+            success: false,
+            message: 'Formato de respuestas inválido o incompleto'
             });
         }
-        
-        //Buscar el usuario
-        const user = await User.findById(userId); 
-        if (!user) { 
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Usuario no encontrado' 
-            }); 
-        } 
-        
-        user.answers = answers; 
-        await user.save(); 
-        
-        res.status(200).json({ 
-            success: true, 
-            message: 'Respuestas guardadas exitosamente' 
-        }); 
-    } catch (error) { 
-        console.error('Error al guardar respuestas:', error); 
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error al guardar respuestas' 
+  
+      // Buscar el usuario
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+            success: false,
+            message: 'Usuario no encontrado'
+            });
+        }
+      // Guardar las respuestas
+        user.answers = answers;
+        await user.save();
+        res.status(200).json({
+            success: true,
+            message: 'Respuestas guardadas exitosamente'
+        });
+    } catch (error) {
+        console.error('Error al guardar respuestas:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al guardar respuestas',
+            error: error.message || 'Error desconocido'
         });
     }
-});
-
+});  
 //Obtener Respuestas
 router.get('/answers/:userId', async (req, res) => { 
     try { 
