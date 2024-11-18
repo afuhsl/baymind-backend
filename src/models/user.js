@@ -44,11 +44,11 @@ const userSchema = new mongoose.Schema({
         default: null
     },
     answers: {
-        name: { type: String, required: true },
-        age: { type: Number, required: true },
-        isWorking: { type: Boolean, required: true },
-        isStudying: { type: Boolean, required: true },
-        appUsageReason: { type: String, required: true },  
+        name: { type: String, required: false },
+        age: { type: Number, required: false },
+        isWorking: { type: Boolean, required: false },
+        isStudying: { type: Boolean, required: false },
+        appUsageReason: { type: String, required: false },  
     },
 
     resetPasswordToken: String,
