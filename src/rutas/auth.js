@@ -100,14 +100,17 @@ router.post('/answers',verifyToken, async (req, res) => {
     try {
       // Verifica si el token ha sido verificado correctamente en el middleware
       if (!req.user || !req.user.userId) {
+        console.error('Token no verificado correctamente:', req.user);
         return res.status(401).json({
           success: false,
           message: 'Acceso denegado, no se encontró el usuario asociado al token',
         });
       }
   
-      const userId = req.user.userId;
+      const userId = req.user._id;
       const { answers } = req.body;
+      console.log('Token verificado, userId:', req.user._id); // Verifica el userId del token
+
   
       // Validación de las respuestas
       if (!answers || 
