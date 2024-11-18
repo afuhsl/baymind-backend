@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 
-router.use(verifyToken);
 
 // Ruta de registro
 router.post('/register', async (req, res) => {
@@ -97,7 +96,7 @@ router.post('/login', async (req, res) => {
 });
 
 //Guardar respuestas
-router.post('/answers', async (req, res) => {
+router.post('/answers',verifyToken, async (req, res) => {
     try {
       // Verifica si el token ha sido verificado correctamente en el middleware
       if (!req.user || !req.user.userId) {
