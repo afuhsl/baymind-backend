@@ -22,9 +22,9 @@ const userSchema = new mongoose.Schema({
     },
     name: {
         type: String,
-        required: [true, 'El nombre es requerido'],
-        trim: true,
-        minlength: [2, 'El nombre debe tener al menos 2 caracteres']
+        //required: [true, 'El nombre es requerido'],
+        //trim: true,
+        //minlength: [2, 'El nombre debe tener al menos 2 caracteres']
     },
     role: {
         type: String,
