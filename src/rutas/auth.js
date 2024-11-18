@@ -113,7 +113,8 @@ router.post('/answers', async (req, res) => {
           !answers.age || 
           answers.isWorking === undefined || 
           answers.isStudying === undefined || 
-          !answers.appUsageReason) {
+          !answers.appUsageReason ||
+          answers.hasTherapy === undefined) {
         return res.status(400).json({
           success: false,
           message: 'Formato de respuestas inválido o incompleto. Por favor, asegúrese de enviar todos los campos requeridos.',

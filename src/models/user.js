@@ -48,7 +48,8 @@ const userSchema = new mongoose.Schema({
         age: { type: Number, required: false },
         isWorking: { type: Boolean, required: false },
         isStudying: { type: Boolean, required: false },
-        appUsageReason: { type: String, required: false },  
+        appUsageReason: { type: String, required: false },
+        hasTherapy:{ type: Boolean, required: false},  
     },
 
     resetPasswordToken: String,
