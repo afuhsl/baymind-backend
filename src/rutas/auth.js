@@ -4,6 +4,9 @@ const verifyToken = require('../middleware/auth');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+
+router.use(verifyToken);
+
 // Ruta de registro
 router.post('/register', async (req, res) => {
     try {
