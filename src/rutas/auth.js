@@ -295,148 +295,165 @@ router.post('/logout', async (req, res) => {
 //Endpoint para obtener frase aleatoria
 router.get('/frase', async (req, res) => { try { const count = await Phrase.countDocuments(); const randomIndex = Math.floor(Math.random() * count); const randomPhrase = await Phrase.findOne().skip(randomIndex); res.json({ error: null, data: randomPhrase }); } catch (error) { console.error('Error al obtener la frase aleatoria:', error); res.status(500).json({ error: error.message }); } });
 
-router.post('/registrarestado', async (req, res) => {
+// 1. Registrar estado
+// 1. Registrar estado
+app.post('/registrarestado', async (req, res) => {
     try {
         const { userId, dia, mes, estado } = req.body;
-
-        // Encontrar el usuario por ID
+        
+        // Crear fecha con el año actual
+        const fecha = new Date(new Date().getFullYear(), mes - 1, dia);
+        
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        // Crear el registro de estado de ánimo
-        const date = new Date();
-        date.setDate(dia);
-        date.setMonth(mes - 1);  // Meses en JavaScript son 0-11
-
-        const moodRecord = {
-            date: date,
+        // Agregar nuevo estado a cards
+        user.cards.push({
+            date: fecha,
             mood: estado
-        };
+        });
 
-        // Añadir el registro de estado de ánimo al usuario
-        user.moodRecords.push(moodRecord);
         await user.save();
-
-        res.json({ error: null, data: 'Estado de ánimo registrado exitosamente' });
+        res.status(201).json({ 
+            mensaje: 'Estado registrado exitosamente', 
+            estado: user.cards[user.cards.length - 1] 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.get('/obtenersemana', async (req, res) => {
+// 2. Obtener estados de la semana actual
+app.get('/obtenersemana', async (req, res) => {
     try {
-        const { userId } = req.query;
+        const { userId, dia, mes } = req.query;
         
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - startDate.getDay());
+        // Crear fecha de referencia
+        const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
+        
+        // Obtener inicio y fin de la semana
+        const inicioSemana = new Date(fechaReferencia);
+        inicioSemana.setDate(fechaReferencia.getDate() - fechaReferencia.getDay());
+        inicioSemana.setHours(0, 0, 0, 0);
+        
+        const finSemana = new Date(fechaReferencia);
+        finSemana.setDate(fechaReferencia.getDate() + (6 - fechaReferencia.getDay()));
+        finSemana.setHours(23, 59, 59, 999);
 
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 7);
-
-        const user = await User.findById(userId, 'moodRecords');
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        const weekRecords = user.moodRecords.filter(record => {
-            return record.date >= startDate && record.date < endDate;
-        });
-
-        res.json({ error: null, data: weekRecords });
+        const estadosSemana = user.cards.filter(card => 
+            card.date >= inicioSemana && card.date <= finSemana
+        );
+        
+        res.json(estadosSemana);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.get('/obtenerultimosestados', async (req, res) => {
+// 3. Obtener estados entre fechas
+app.get('/obtenerultimosestados', async (req, res) => {
     try {
-        const { userId, startDate, endDate } = req.query;
-
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-
-        const user = await User.findById(userId, 'moodRecords');
+        const { userId, primerdia, primermes, ultimodia, ultimomes } = req.query;
+        
+        const fechaInicio = new Date(new Date().getFullYear(), primermes - 1, primerdia);
+        fechaInicio.setHours(0, 0, 0, 0);
+        
+        const fechaFin = new Date(new Date().getFullYear(), ultimomes - 1, ultimodia);
+        fechaFin.setHours(23, 59, 59, 999);
+        
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        const filteredRecords = user.moodRecords.filter(record => {
-            return record.date >= start && record.date <= end;
-        });
-
-        res.json({ error: null, data: filteredRecords });
+        const estados = user.cards.filter(card => 
+            card.date >= fechaInicio && card.date <= fechaFin
+        );
+        
+        res.json(estados);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.get('/obtenersemanas', async (req, res) => {
+// 4. Obtener últimas 7 semanas del mismo día
+app.get('/obtenersemanas', async (req, res) => {
     try {
-        const { userId, dayOfWeek } = req.query;
-
-        const user = await User.findById(userId, 'moodRecords');
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-
-        const dayOfWeekInt = parseInt(dayOfWeek);
-
-        const pastSevenWeeks = [];
-        let currentDate = new Date();
-
+        const { userId, dia, mes } = req.query;
+        
+        // Fecha de referencia
+        const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
+        
+        // Crear array de fechas para las últimas 7 semanas
+        const fechas = [];
         for (let i = 0; i < 7; i++) {
-            const date = new Date(currentDate);
-            date.setDate(date.getDate() - date.getDay() + dayOfWeekInt);
-            pastSevenWeeks.push(date);
-            currentDate.setDate(currentDate.getDate() - 7);
+            const fecha = new Date(fechaReferencia);
+            fecha.setDate(fecha.getDate() - (i * 7));
+            fechas.push({
+                inicio: new Date(fecha.setHours(0, 0, 0, 0)),
+                fin: new Date(fecha.setHours(23, 59, 59, 999))
+            });
+        }
+        
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        const weekRecords = user.moodRecords.filter(record => {
-            return pastSevenWeeks.some(week => 
-                record.date.getFullYear() === week.getFullYear() && 
-                record.date.getMonth() === week.getMonth() && 
-                record.date.getDate() === week.getDate()
+        // Buscar estados para cada fecha
+        const estados = fechas.map(({ inicio, fin }) => {
+            const estadosDia = user.cards.filter(card => 
+                card.date >= inicio && card.date <= fin
             );
-        });
-
-        res.json({ error: null, data: weekRecords });
+            return estadosDia[0] || null; // Devolver el primer estado del día o null
+        }).filter(estado => estado !== null);
+        
+        res.json(estados);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-router.get('/obtenermeses', async (req, res) => {
+// 5. Obtener últimos 7 meses del mismo día
+app.get('/obtenermeses', async (req, res) => {
     try {
-        const { userId, dayOfMonth } = req.query;
-
-        const user = await User.findById(userId, 'moodRecords');
+        const { userId, dia, mes } = req.query;
+        
+        // Fecha de referencia
+        const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
+        
+        // Crear array de fechas para los últimos 7 meses
+        const fechas = [];
+        for (let i = 0; i < 7; i++) {
+            const fecha = new Date(fechaReferencia);
+            fecha.setMonth(fecha.getMonth() - i);
+            fechas.push({
+                inicio: new Date(fecha.setHours(0, 0, 0, 0)),
+                fin: new Date(fecha.setHours(23, 59, 59, 999))
+            });
+        }
+        
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        const dayOfMonthInt = parseInt(dayOfMonth);
-
-        const pastSevenMonths = [];
-        let currentDate = new Date();
-
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(currentDate);
-            date.setDate(dayOfMonthInt);
-            pastSevenMonths.push(date);
-            currentDate.setMonth(currentDate.getMonth() - 1);
-        }
-
-        const monthRecords = user.moodRecords.filter(record => {
-            return pastSevenMonths.some(month => 
-                record.date.getFullYear() === month.getFullYear() && 
-                record.date.getMonth() === month.getMonth() && 
-                record.date.getDate() === month.getDate()
+        // Buscar estados para cada fecha
+        const estados = fechas.map(({ inicio, fin }) => {
+            const estadosDia = user.cards.filter(card => 
+                card.date >= inicio && card.date <= fin
             );
-        });
-
-        res.json({ error: null, data: monthRecords });
+            return estadosDia[0] || null; // Devolver el primer estado del día o null
+        }).filter(estado => estado !== null);
+        
+        res.json(estados);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
