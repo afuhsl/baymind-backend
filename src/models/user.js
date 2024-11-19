@@ -1,5 +1,18 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+
+const moodSchema = new mongoose.Schema({
+    date: {
+        type: Date,
+        required: true
+    },
+    mood: {
+        type: String,
+        required: true,
+    },
+});
+
+
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -51,6 +64,7 @@ const userSchema = new mongoose.Schema({
         appUsageReason: { type: String, required: false },
         hasTherapy:{ type: Boolean, required: false},  
     },
+    moodRecords: [moodSchema],
 
     resetPasswordToken: String,
     resetPasswordExpire: Date

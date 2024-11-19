@@ -112,19 +112,15 @@ router.post('/answers',verifyToken, async (req, res) => {
         const { answers } = req.body;
         console.log('Token verificado, userId:', req.user._id); // Verifica el userId del token
 
-      // Validación de las respuestas
-        if (!answers || 
-            !answers.name || 
-            !answers.age || 
-            answers.isWorking === undefined || 
-            answers.isStudying === undefined ||
-            answers.hasTherapy === undefined ||
-            !answers.appUsageReason) {
-            return res.status(400).json({
+     // Validación de las respuestas
+    if (!answers) {
+        return res.status(400).json({
             success: false,
             message: 'Formato de respuestas inválido o incompleto. Por favor, asegúrese de enviar todos los campos requeridos.',
-            });
-        }
+        });
+    }
+
+
 
       // Buscar el usuario en la base de datos
         const user = await User.findById(userId);
@@ -191,40 +187,45 @@ router.get('/answers/:userId', async (req, res) => {
 }); 
 
 // Ruta para guardar estado de ánimo 
-router.post('/mood', async (req, res) => { 
+router.post('/mood', verifyToken,async (req, res) => { 
     try { 
-        const userId = req.user.userId; 
+        const userId = req.user._id; 
         const { mood } = req.body; 
         
-        if (!mood) { 
-            return res.status(400).json({ 
-                success: false, 
-                message: 'El estado de ánimo es requerido' 
-            }); 
-        } 
-        
-        const user = await User.findById(userId); 
-        
-        if (!user) { 
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Usuario no encontrado' 
-            }); 
-        } 
-        
-        user.mood = mood; 
-        await user.save(); 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Estado de ánimo guardado exitosamente' 
-        }); 
-    } catch (error) { 
-        console.error('Error al guardar el estado de ánimo:', error); 
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error al guardar el estado de ánimo' 
-        }); 
-    } 
+        // Validar que se haya enviado el estado de ánimo
+        if (!mood || typeof mood !== 'string' || mood.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: 'El estado de ánimo es requerido y debe ser una cadena no vacía.',
+            });
+        }
+
+        // Buscar al usuario
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado.',
+            });
+        }
+
+        // Registrar el estado de ánimo con fecha actual
+        user.moodRecords.push({ date: new Date(), mood });
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Estado de ánimo guardado exitosamente.',
+            data: user.moodRecords,
+        });
+    } catch (error) {
+        console.error('Error al guardar el estado de ánimo:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al guardar el estado de ánimo.',
+        });
+    }
 }); 
 
 // Ruta para obtener estado de ánimo 
