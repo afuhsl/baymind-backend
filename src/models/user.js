@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+
 
 const moodSchema = new mongoose.Schema({
     date: {
@@ -11,8 +12,6 @@ const moodSchema = new mongoose.Schema({
         required: true,
     },
 });
-
-
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -77,6 +76,10 @@ const userSchema = new mongoose.Schema({
         }
     }
 });
+
+
+
+
 
 // Middleware pre-save para hashear la contraseña
 userSchema.pre('save', async function(next) {
