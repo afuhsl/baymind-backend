@@ -295,9 +295,9 @@ router.post('/logout', async (req, res) => {
 //Endpoint para obtener frase aleatoria
 router.get('/frase', async (req, res) => { try { const count = await Phrase.countDocuments(); const randomIndex = Math.floor(Math.random() * count); const randomPhrase = await Phrase.findOne().skip(randomIndex); res.json({ error: null, data: randomPhrase }); } catch (error) { console.error('Error al obtener la frase aleatoria:', error); res.status(500).json({ error: error.message }); } });
 
+
 // 1. Registrar estado
-// 1. Registrar estado
-app.post('/registrarestado', async (req, res) => {
+router.post('/registrarestado', async (req, res) => {
     try {
         const { userId, dia, mes, estado } = req.body;
         
@@ -326,7 +326,7 @@ app.post('/registrarestado', async (req, res) => {
 });
 
 // 2. Obtener estados de la semana actual
-app.get('/obtenersemana', async (req, res) => {
+router.get('/obtenersemana', async (req, res) => {
     try {
         const { userId, dia, mes } = req.query;
         
@@ -358,7 +358,7 @@ app.get('/obtenersemana', async (req, res) => {
 });
 
 // 3. Obtener estados entre fechas
-app.get('/obtenerultimosestados', async (req, res) => {
+router.get('/obtenerultimosestados', async (req, res) => {
     try {
         const { userId, primerdia, primermes, ultimodia, ultimomes } = req.query;
         
@@ -384,7 +384,7 @@ app.get('/obtenerultimosestados', async (req, res) => {
 });
 
 // 4. Obtener últimas 7 semanas del mismo día
-app.get('/obtenersemanas', async (req, res) => {
+router.get('/obtenersemanas', async (req, res) => {
     try {
         const { userId, dia, mes } = req.query;
         
@@ -422,7 +422,7 @@ app.get('/obtenersemanas', async (req, res) => {
 });
 
 // 5. Obtener últimos 7 meses del mismo día
-app.get('/obtenermeses', async (req, res) => {
+router.get('/obtenermeses', async (req, res) => {
     try {
         const { userId, dia, mes } = req.query;
         
