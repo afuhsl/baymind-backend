@@ -99,7 +99,7 @@ router.post('/login', async (req, res) => {
 router.post('/answers',verifyToken, async (req, res) => {
     try {
       // Verifica si el token ha sido verificado correctamente en el middleware
-      if (!req.user || !req.user.userId) {
+      if (!req.user || !req.user._id) {
         console.error('Token no verificado correctamente:', req.user);
         return res.status(401).json({
           success: false,
