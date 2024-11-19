@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema({
         appUsageReason: { type: String, required: false },
         hasTherapy:{ type: Boolean, required: false},  
     },
-    moodRecords: [moodSchema],
+    cards: [moodSchema],
 
     resetPasswordToken: String,
     resetPasswordExpire: Date
@@ -82,7 +82,7 @@ const userSchema = new mongoose.Schema({
 
 
 // Middleware pre-save para hashear la contraseña
-userSchema.pre('save', async function(next) {
+/*userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
         return next();
     }
@@ -93,7 +93,7 @@ userSchema.pre('save', async function(next) {
     } catch (error) {
         next(error);
     }
-});
+});*/
 
 // Método para comparar contraseñas
 userSchema.methods.comparePassword = async function(candidatePassword) {

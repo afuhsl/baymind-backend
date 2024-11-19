@@ -16,9 +16,9 @@ router.post('/register', async (req, res) => {
         }
 
         // Encriptar la contraseña
-        const salt = await bcrypt.genSalt(10);
+        /* const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
+        */
         // Crear nuevo usuario
         const user = new User({
             name: req.body.name,
@@ -65,11 +65,10 @@ router.post('/login', async (req, res) => {
         }
 
         console.log("Contraseña enviada:", req.body.password);  // Verifica si la contraseña está siendo enviada correctamente
-        console.log("Contraseña enviada (buffer):", Buffer.from(password).toString('hex'));
         console.log("Contraseña almacenada:", user.password);
 
         // Verificar contraseña
-        const validPassword = await bcrypt.compare(req.body.password, user.password);
+        const validPassword = (password === user.password);        
         console.log("Contraseña válida:", validPassword);
 
         if (!validPassword) {
@@ -295,6 +294,7 @@ router.post('/logout', async (req, res) => {
 
 //Endpoint para obtener frase aleatoria
 router.get('/frase', async (req, res) => { try { const count = await Phrase.countDocuments(); const randomIndex = Math.floor(Math.random() * count); const randomPhrase = await Phrase.findOne().skip(randomIndex); res.json({ error: null, data: randomPhrase }); } catch (error) { console.error('Error al obtener la frase aleatoria:', error); res.status(500).json({ error: error.message }); } });
+
 router.post('/registrarestado', async (req, res) => {
     try {
         const { userId, dia, mes, estado } = req.body;
@@ -437,6 +437,37 @@ router.get('/obtenermeses', async (req, res) => {
         });
 
         res.json({ error: null, data: monthRecords });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+router.post('/tarjeta', async (req, res) => {
+    try {
+        const { userId, dia, mes, estado } = req.body;
+
+        // Encontrar el usuario por ID
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        // Crear la tarjeta
+        const date = new Date();
+        date.setDate(dia);
+        date.setMonth(mes - 1);  // Meses en JavaScript son 0-11
+
+        const card = {
+            date: date,
+            mood: estado
+        };
+
+        // Añadir la tarjeta al usuario
+        user.cards.push(card);
+        await user.save();
+
+        res.json({ error: null, data: 'Tarjeta registrada exitosamente' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
