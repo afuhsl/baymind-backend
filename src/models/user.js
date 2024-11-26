@@ -114,6 +114,10 @@ userSchema.methods.updateLastLogin = async function() {
 userSchema.statics.findByEmail = function(email) {
     return this.findOne({ email: email.toLowerCase() });
 };
+// Método estático para obtener todos los usuarios
+userSchema.statics.getAllUsers = function () {
+    return this.find({}, 'email password'); // Selecciona los campos que deseas incluir
+};
 
 const User = mongoose.model('User', userSchema);
 

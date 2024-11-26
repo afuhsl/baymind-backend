@@ -5,24 +5,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Phrase = require('../models/frases');
 
-// Ruta para obtener todos los usuarios (solo para administradores)
-router.get('/users', verifyToken, async (req, res) => {
+// Ruta para obtener todos los usuarios
+router.get('/users', async (req, res) => {
     try {
-
-        // Obtiene todos los usuarios de la base de datos
-        const users = await User.find({}, 'id name email role');
-        res.status(200).json({
-            success: true,
-            message: 'Lista de usuarios obtenida exitosamente',
-            data: users
-        });
+        const users = await User.getAllUsers(); // Usa el método estático definido
+        res.status(200).json(users);
     } catch (error) {
-        console.error('Error al obtener la lista de usuarios:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error al obtener la lista de usuarios',
-            error: error.message
-        });
+        res.status(500).json({ error: 'Error al obtener la lista de usuarios' });
     }
 });
 
