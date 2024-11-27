@@ -184,12 +184,18 @@ router.get('/answers/:userId', async (req, res) => {
 // Ruta para guardar estado de ánimo
 router.post('/mood', async (req, res) => {
     try {
-        const { email, dia, mes, estado } = req.body;  // Recibimos el email y el estado de ánimo desde el cuerpo de la solicitud
+        const { email, dia, mes, estado } = req.body;
+
+        // Validar que todos los datos requeridos estén presentes
+        if (!email || !dia || !mes || !estado) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email, día, mes y estado de ánimo son requeridos.',
+            });
+        }
 
         // Buscar al usuario por email
         const user = await User.findOne({ email });
-
-        // Si no se encuentra al usuario, devolver error
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -197,19 +203,21 @@ router.post('/mood', async (req, res) => {
             });
         }
 
+        // Construir la fecha a partir de día y mes
+        const fecha = new Date(new Date().getFullYear(), mes - 1, dia);
+        const fechaISO = fecha.toISOString().split('T')[0]; // Comparar solo la parte de la fecha (sin hora)
+
         // Buscar si ya existe un estado de ánimo para esa fecha
-        const existingMoodIndex = user.cards.findIndex(card => card.date.toString() === new Date(new Date().getFullYear(), mes - 1, dia));
-            fecha=new Date(new Date().getFullYear(), mes - 1, dia);
+        const existingMoodIndex = user.cards.findIndex(
+            card => card.date.toISOString().split('T')[0] === fechaISO
+        );
+
         if (existingMoodIndex !== -1) {
             // Si ya existe un estado de ánimo para esa fecha, actualizarlo
             user.cards[existingMoodIndex].mood = estado;
         } else {
             // Si no existe, agregar un nuevo estado de ánimo
-            const newMood = {
-                date: fecha,  // Fecha recibida
-                mood: cards.mood,            // Estado de ánimo recibido
-            };
-            user.cards.push(newMood);
+            user.cards.push({ date: fecha, mood: estado });
         }
 
         // Guardar los cambios en la base de datos
@@ -228,6 +236,7 @@ router.post('/mood', async (req, res) => {
         });
     }
 });
+
 
 
 
