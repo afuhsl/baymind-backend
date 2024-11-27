@@ -187,7 +187,7 @@ router.post('/mood', async (req, res) => {
         const { email, cards } = req.body;  // Recibimos el email y el estado de ánimo desde el cuerpo de la solicitud
 
         // Verificar que el estado de ánimo se haya proporcionado
-        if (!mood) {
+        if (!cards) {
             return res.status(400).json({
                 success: false,
                 message: 'El estado de ánimo es requerido',
