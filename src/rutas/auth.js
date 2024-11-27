@@ -105,9 +105,9 @@ router.post('/answers', async (req, res) => {
     console.log(req.body);
     try {
         
-        const userId = req.user._id;
+        const useremail = req.user.email;
         const { answers } = req.body;
-        console.log('Token verificado, userId:', req.user._id); // Verifica el userId del token
+        console.log('Token verificado, userId:', req.user.email); // Verifica el userId del token
 
      // Validación de las respuestas
     if (!answers) {
@@ -120,7 +120,7 @@ router.post('/answers', async (req, res) => {
 
 
       // Buscar el usuario en la base de datos
-        const user = await User.findById(userId);
+        const user = await User.findByEmail(useremail);
         if (!user) {
             return res.status(404).json({
             success: false,
