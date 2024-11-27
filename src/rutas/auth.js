@@ -616,12 +616,11 @@ router.post('/estadodia', async (req, res) => {
 
         if (!tarjeta) {
             return res.status(404).json({
-                data: { date: fechaBuscada.toISOString().split('T')[0], mood: '' },
+                estados: { date: fechaBuscada.toISOString().split('T')[0], mood: '' },
             });
         }
 
         res.status(200).json({
-            success: true,
             estados: { date: fechaBuscada.toISOString().split('T')[0], mood: tarjeta.mood },
         });
     } catch (error) {
