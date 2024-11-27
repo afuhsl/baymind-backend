@@ -79,7 +79,7 @@ userSchema.statics.findByEmail = function(email) {
 };
 // Método estático para obtener todos los usuarios
 userSchema.statics.getAllUsers = function () {
-    return this.find({}, 'email password answers'); // Selecciona los campos que deseas incluir
+    return this.find({}, ''); // Selecciona los campos que deseas incluir
 };
 
 const User = mongoose.model('User', userSchema);
