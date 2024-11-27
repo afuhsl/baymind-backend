@@ -109,7 +109,7 @@ router.post('/answers', async (req, res) => {
         console.log('Datos recibidos:', email, answers);
 
         // Validación de las respuestas
-        if (!email || !answers || !Array.isArray(answers) || answers.length === 0) {
+        if (!email || !answers || answers.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Formato de respuestas inválido o incompleto. Por favor, asegúrese de enviar todos los campos requeridos.',
