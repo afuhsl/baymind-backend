@@ -184,15 +184,7 @@ router.get('/answers/:userId', async (req, res) => {
 // Ruta para guardar estado de ánimo
 router.post('/mood', async (req, res) => {
     try {
-        const { email, cards } = req.body;  // Recibimos el email y el estado de ánimo desde el cuerpo de la solicitud
-
-        // Verificar que el estado de ánimo se haya proporcionado
-        if (!cards || !cards.date || !cards.mood) {
-            return res.status(400).json({
-                success: false,
-                message: 'El estado de ánimo y la fecha son requeridos',
-            });
-        }
+        const { email, dia, mes, estado } = req.body;  // Recibimos el email y el estado de ánimo desde el cuerpo de la solicitud
 
         // Buscar al usuario por email
         const user = await User.findOne({ email });
@@ -206,15 +198,15 @@ router.post('/mood', async (req, res) => {
         }
 
         // Buscar si ya existe un estado de ánimo para esa fecha
-        const existingMoodIndex = user.cards.findIndex(card => card.date.toString() === new Date(cards.date).toString());
-
+        const existingMoodIndex = user.cards.findIndex(card => card.date.toString() === new Date(new Date().getFullYear(), mes - 1, dia));
+            fecha=new Date(new Date().getFullYear(), mes - 1, dia);
         if (existingMoodIndex !== -1) {
             // Si ya existe un estado de ánimo para esa fecha, actualizarlo
-            user.cards[existingMoodIndex].mood = cards.mood;
+            user.cards[existingMoodIndex].mood = estado;
         } else {
             // Si no existe, agregar un nuevo estado de ánimo
             const newMood = {
-                date: new Date(cards.date),  // Fecha recibida
+                date: fecha,  // Fecha recibida
                 mood: cards.mood,            // Estado de ánimo recibido
             };
             user.cards.push(newMood);
