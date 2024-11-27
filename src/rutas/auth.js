@@ -100,53 +100,51 @@ router.post('/login', async (req, res) => {
     }
 });
 
-//Guardar respuestas
 router.post('/answers', async (req, res) => {
-    console.log(req.body);
+    console.log(req.body);  // Muestra lo que llega en la solicitud para depurar
+
     try {
-        
-        const useremail = req.user.email;
-        const { answers } = req.body;
-        console.log('Token verificado, userId:', req.user.email); // Verifica el userId del token
+        // Obtenemos el email directamente del cuerpo de la solicitud
+        const { email, answers } = req.body;
+        console.log('Datos recibidos:', email, answers);
 
-     // Validación de las respuestas
-    if (!answers) {
-        return res.status(400).json({
-            success: false,
-            message: 'Formato de respuestas inválido o incompleto. Por favor, asegúrese de enviar todos los campos requeridos.',
-        });
-    }
-
-
-
-      // Buscar el usuario en la base de datos
-        const user = await User.findByEmail(useremail);
-        if (!user) {
-            return res.status(404).json({
-            success: false,
-            message: 'Usuario no encontrado',
+        // Validación de las respuestas
+        if (!email || !answers || !Array.isArray(answers) || answers.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Formato de respuestas inválido o incompleto. Por favor, asegúrese de enviar todos los campos requeridos.',
             });
         }
 
-      // Guardar las respuestas en el perfil del usuario
+        // Buscar el usuario en la base de datos por el email
+        const user = await User.findByEmail(email);  // Asume que tienes un método para buscar por email
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado',
+            });
+        }
+
+        // Guardar las respuestas en el perfil del usuario
         user.answers = answers;
         await user.save();
-  
-      // Respuesta exitosa
+
+        // Respuesta exitosa
         res.status(200).json({
             success: true,
             message: 'Respuestas guardadas exitosamente',
         });
     } catch (error) {
         console.error('Error al guardar respuestas:', error);
-      // Respuesta de error detallada para el cliente
+        // Respuesta de error detallada para el cliente
         res.status(500).json({
-        success: false,
-        message: 'Error al guardar respuestas',
-        error: error.message || 'Error desconocido',
+            success: false,
+            message: 'Error al guardar respuestas',
+            error: error.message || 'Error desconocido',
         });
     }
 });
+
 
 
 //Obtener Respuestas
