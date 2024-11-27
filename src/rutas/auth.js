@@ -308,37 +308,71 @@ router.post('/logout', async (req, res) => {
 router.get('/frase', async (req, res) => { try { const count = await Phrase.countDocuments(); const randomIndex = Math.floor(Math.random() * count); const randomPhrase = await Phrase.findOne().skip(randomIndex); res.json({ error: null, data: randomPhrase }); } catch (error) { console.error('Error al obtener la frase aleatoria:', error); res.status(500).json({ error: error.message }); } });
 
 
-//Obtener estados de la semana actual
+// Obtener estados de ánimo de la semana actual
 router.post('/obtenersemana', async (req, res) => {
     try {
-        const { email, dia, mes } = req.query;
-        
+        const { email, dia, mes } = req.body; // Cambié `req.query` a `req.body` para recibir un JSON
+
+        if (!email || !dia || !mes) {
+            return res.status(400).json({
+                error: 'Por favor, proporciona email, día y mes',
+            });
+        }
+
         // Crear fecha de referencia
         const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
-        
+
         // Obtener inicio y fin de la semana
         const inicioSemana = new Date(fechaReferencia);
         inicioSemana.setDate(fechaReferencia.getDate() - fechaReferencia.getDay());
         inicioSemana.setHours(0, 0, 0, 0);
-        
+
         const finSemana = new Date(fechaReferencia);
         finSemana.setDate(fechaReferencia.getDate() + (6 - fechaReferencia.getDay()));
         finSemana.setHours(23, 59, 59, 999);
 
-        const user = await User.findByEmail(email);
+        // Buscar el usuario por email
+        const user = await User.findOne({ email });
+
         if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
+            return res.status(404).json({
+                error: 'Usuario no encontrado',
+            });
         }
 
-        const estadosSemana = user.cards.filter(card => 
-            card.date >= inicioSemana && card.date <= finSemana
-        );
-        
-        res.json(estadosSemana);
+        // Generar todas las fechas de la semana
+        const fechasSemana = [];
+        for (let i = 0; i < 7; i++) {
+            const fecha = new Date(inicioSemana);
+            fecha.setDate(inicioSemana.getDate() + i);
+            fechasSemana.push(fecha);
+        }
+
+        // Mapear las fechas con los estados de ánimo
+        const estadosSemana = fechasSemana.map((fecha) => {
+            const estado = user.cards.find(
+                (card) =>
+                    new Date(card.date).toDateString() === fecha.toDateString()
+            );
+            return {
+                date: fecha.toISOString().split('T')[0], // Formatear la fecha en formato YYYY-MM-DD
+                mood: estado ? estado.mood : '', // Si no hay estado, devolver vacío
+            };
+        });
+
+        // Responder con los estados de la semana
+        res.json({
+            success: true,
+            estados: estadosSemana,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al obtener los estados de la semana:', error);
+        res.status(500).json({
+            error: error.message,
+        });
     }
 });
+
 
 //Obtener estados entre fechas
 router.get('/obtenerultimosestados', async (req, res) => {
