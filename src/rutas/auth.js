@@ -309,7 +309,7 @@ router.get('/frase', async (req, res) => { try { const count = await Phrase.coun
 
 
 //Obtener estados de la semana actual
-router.get('/obtenersemana', async (req, res) => {
+router.post('/obtenersemana', async (req, res) => {
     try {
         const { email, dia, mes } = req.query;
         
