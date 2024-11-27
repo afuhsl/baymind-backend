@@ -375,9 +375,9 @@ router.post('/obtenersemana', async (req, res) => {
 
 
 // Obtener estados entre fechas específicas
-router.get('/obtenerultimosestados', async (req, res) => {
+router.post('/obtenerultimosestados', async (req, res) => {
     try {
-        const { email, primerdia, primermes, ultimodia, ultimomes } = req.query;
+        const { email, primerdia, primermes, ultimodia, ultimomes } = req.body;
 
         // Validar entrada
         if (!email || !primerdia || !primermes || !ultimodia || !ultimomes) {
@@ -449,9 +449,9 @@ router.get('/obtenerultimosestados', async (req, res) => {
 
 
 // Obtener últimas 7 semanas del mismo día
-router.get('/obtenersemanas', async (req, res) => {
+router.post('/obtenersemanas', async (req, res) => {
     try {
-        const { email, dia, mes } = req.query;
+        const { email, dia, mes } = req.body;
 
         // Validar entrada
         if (!email || !dia || !mes) {
@@ -517,9 +517,9 @@ router.get('/obtenersemanas', async (req, res) => {
 
 
 // Obtener últimos 7 meses del mismo día
-router.get('/obtenermeses', async (req, res) => {
+router.post('/obtenermeses', async (req, res) => {
     try {
-        const { email, dia, mes } = req.query;
+        const { email, dia, mes } = req.body;
 
         // Validar entrada
         if (!email || !dia || !mes) {
