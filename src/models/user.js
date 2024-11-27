@@ -29,27 +29,9 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'La contraseña es requerida'],
-        minlength: [6, 'La contraseña debe tener al menos 6 caracteres'],
-        select: false // No incluir por defecto en las consultas
     },
     name: {
-        type: String,
-        //required: [true, 'El nombre es requerido'],
-        //trim: true,
-        //minlength: [2, 'El nombre debe tener al menos 2 caracteres']
-    },
-    role: {
-        type: String,
-        enum: ['user', 'admin'],
-        default: 'user'
-    },
-    status: {
-        type: String,
-        enum: ['active', 'inactive', 'suspended'],
-        default: 'active'
-    },
-    lastLogin: {
-        type: Date
+        type: String
     },
     profileImage: {
         type: String,
@@ -64,7 +46,6 @@ const userSchema = new mongoose.Schema({
         hasTherapy:{ type: Boolean, required: false},  
     },
     cards: [moodSchema],
-
     resetPasswordToken: String,
     resetPasswordExpire: Date
 }, {
@@ -77,23 +58,6 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-
-
-
-
-// Middleware pre-save para hashear la contraseña
-/*userSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) {
-        return next();
-    }
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
-});*/
 
 // Método para comparar contraseñas
 userSchema.methods.comparePassword = async function(candidatePassword) {

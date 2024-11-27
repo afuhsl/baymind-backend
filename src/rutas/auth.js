@@ -23,11 +23,6 @@ router.post('/register', async (req, res) => {
         if (emailExists) {
             return res.status(400).json({ error: 'Email ya registrado' });
         }
-
-        // Encriptar la contraseña
-        /* const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(req.body.password, salt);
-        */
         // Crear nuevo usuario
         const user = new User({
             name: req.body.name,
@@ -37,14 +32,6 @@ router.post('/register', async (req, res) => {
 
         // Guardar usuario
         const savedUser = await user.save();
-        
-        // Crear y asignar token
-        const token = jwt.sign(
-            { _id: savedUser._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' }
-        );
-
         res.json({
             error: null,
             data: {
@@ -52,7 +39,8 @@ router.post('/register', async (req, res) => {
                 user: {
                     id: savedUser._id,
                     name: savedUser.name,
-                    email: savedUser.email
+                    email: savedUser.email,
+                    password: savedUser.password
                 }
             }
         });
