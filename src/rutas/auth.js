@@ -105,9 +105,9 @@ router.post('/answers', async (req, res) => {
     console.log(req.body);
     try {
         
-        const userId = req.user.id;
+        const userId = req.user._id;
         const { answers } = req.body;
-        console.log('Token verificado, userId:', req.user.id); // Verifica el userId del token
+        console.log('Token verificado, userId:', req.user._id); // Verifica el userId del token
 
      // Validación de las respuestas
     if (!answers) {
