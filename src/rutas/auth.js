@@ -673,7 +673,7 @@ router.post('/chat', async (req, res) => {
     }
 });
 // Obtener mensajes por email
-router.get('/chat', async (req, res) => {
+router.post('/chat', async (req, res) => {
     try {
         const { email } = req.query;  // Obtener email desde los parámetros de la URL
 
