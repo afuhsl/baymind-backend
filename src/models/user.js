@@ -12,6 +12,20 @@ const moodSchema = new mongoose.Schema({
         required: true,
     },
 });
+const chatSchema = new mongoose.Schema({
+    date: {
+        type: Date,
+        required: true
+    },
+    from:{
+        type: String,
+        required: true
+    },
+    message: {
+        type: String,
+        required: true,
+    },
+});
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -45,6 +59,7 @@ const userSchema = new mongoose.Schema({
         appUsageReason: { type: String, required: false },
         hasTherapy:{ type: Boolean, required: false},  
     },
+    chat:[chatSchema],
     cards: [moodSchema],
     resetPasswordToken: String,
     resetPasswordExpire: Date
