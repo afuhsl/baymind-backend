@@ -308,39 +308,10 @@ router.post('/logout', async (req, res) => {
 router.get('/frase', async (req, res) => { try { const count = await Phrase.countDocuments(); const randomIndex = Math.floor(Math.random() * count); const randomPhrase = await Phrase.findOne().skip(randomIndex); res.json({ error: null, data: randomPhrase }); } catch (error) { console.error('Error al obtener la frase aleatoria:', error); res.status(500).json({ error: error.message }); } });
 
 
-// 1. Registrar estado
-router.post('/registrarestado', async (req, res) => {
-    try {
-        const { userId, dia, mes, estado } = req.body;
-        
-        // Crear fecha con el año actual
-        const fecha = new Date(new Date().getFullYear(), mes - 1, dia);
-        
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-
-        // Agregar nuevo estado a cards
-        user.cards.push({
-            date: fecha,
-            mood: estado
-        });
-
-        await user.save();
-        res.status(201).json({ 
-            mensaje: 'Estado registrado exitosamente', 
-            estado: user.cards[user.cards.length - 1] 
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// 2. Obtener estados de la semana actual
+//Obtener estados de la semana actual
 router.get('/obtenersemana', async (req, res) => {
     try {
-        const { userId, dia, mes } = req.query;
+        const { email, dia, mes } = req.query;
         
         // Crear fecha de referencia
         const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
@@ -354,7 +325,7 @@ router.get('/obtenersemana', async (req, res) => {
         finSemana.setDate(fechaReferencia.getDate() + (6 - fechaReferencia.getDay()));
         finSemana.setHours(23, 59, 59, 999);
 
-        const user = await User.findById(userId);
+        const user = await User.findByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
@@ -369,10 +340,10 @@ router.get('/obtenersemana', async (req, res) => {
     }
 });
 
-// 3. Obtener estados entre fechas
+//Obtener estados entre fechas
 router.get('/obtenerultimosestados', async (req, res) => {
     try {
-        const { userId, primerdia, primermes, ultimodia, ultimomes } = req.query;
+        const { email, primerdia, primermes, ultimodia, ultimomes } = req.query;
         
         const fechaInicio = new Date(new Date().getFullYear(), primermes - 1, primerdia);
         fechaInicio.setHours(0, 0, 0, 0);
@@ -380,7 +351,7 @@ router.get('/obtenerultimosestados', async (req, res) => {
         const fechaFin = new Date(new Date().getFullYear(), ultimomes - 1, ultimodia);
         fechaFin.setHours(23, 59, 59, 999);
         
-        const user = await User.findById(userId);
+        const user = await User.findByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
@@ -395,10 +366,10 @@ router.get('/obtenerultimosestados', async (req, res) => {
     }
 });
 
-// 4. Obtener últimas 7 semanas del mismo día
+//Obtener últimas 7 semanas del mismo día
 router.get('/obtenersemanas', async (req, res) => {
     try {
-        const { userId, dia, mes } = req.query;
+        const { email, dia, mes } = req.query;
         
         // Fecha de referencia
         const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
@@ -414,7 +385,7 @@ router.get('/obtenersemanas', async (req, res) => {
             });
         }
         
-        const user = await User.findById(userId);
+        const user = await User.findByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
@@ -433,10 +404,10 @@ router.get('/obtenersemanas', async (req, res) => {
     }
 });
 
-// 5. Obtener últimos 7 meses del mismo día
+//Obtener últimos 7 meses del mismo día
 router.get('/obtenermeses', async (req, res) => {
     try {
-        const { userId, dia, mes } = req.query;
+        const { email, dia, mes } = req.query;
         
         // Fecha de referencia
         const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
@@ -452,7 +423,7 @@ router.get('/obtenermeses', async (req, res) => {
             });
         }
         
-        const user = await User.findById(userId);
+        const user = await User.findByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
@@ -474,10 +445,10 @@ router.get('/obtenermeses', async (req, res) => {
 
 router.post('/tarjeta', async (req, res) => {
     try {
-        const { userId, dia, mes, estado } = req.body;
+        const { email, dia, mes, estado } = req.body;
 
         // Encontrar el usuario por ID
-        const user = await User.findById(userId);
+        const user = await User.findByEmail(email);
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
