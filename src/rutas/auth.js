@@ -181,42 +181,56 @@ router.get('/answers/:userId', async (req, res) => {
 } 
 }); 
 
-// Ruta para guardar estado de ánimo 
-router.post('/mood', verifyToken,async (req, res) => { 
-    try { 
-        const userId = req.user.userId; 
-        const { mood } = req.body; 
-        
-        if (!mood) { 
-            return res.status(400).json({ 
-                success: false, 
-                message: 'El estado de ánimo es requerido' 
-            }); 
-        } 
-        
-        const user = await User.findById(userId); 
-        
-        if (!user) { 
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Usuario no encontrado' 
-            }); 
-        } 
-        
-        user.mood = mood; 
-        await user.save(); 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Estado de ánimo guardado exitosamente' 
-        }); 
-    } catch (error) { 
-        console.error('Error al guardar el estado de ánimo:', error); 
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error al guardar el estado de ánimo' 
-        }); 
-    } 
-}); 
+// Ruta para guardar estado de ánimo
+router.post('/mood', async (req, res) => {
+    try {
+        const { email, mood } = req.body;  // Recibimos el email y el estado de ánimo desde el cuerpo de la solicitud
+
+        // Verificar que el estado de ánimo se haya proporcionado
+        if (!mood) {
+            return res.status(400).json({
+                success: false,
+                message: 'El estado de ánimo es requerido',
+            });
+        }
+
+        // Buscar al usuario por email
+        const user = await User.findOne({ email });
+
+        // Si no se encuentra al usuario, devolver error
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado',
+            });
+        }
+
+        // Crear el nuevo objeto de estado de ánimo
+        const newMood = {
+            date: new Date(),  // Fecha actual
+            mood: mood,        // Estado de ánimo recibido
+        };
+
+        // Agregar el nuevo estado de ánimo al arreglo de 'cards' del usuario
+        user.cards.push(newMood);
+
+        // Guardar los cambios en la base de datos
+        await user.save();
+
+        // Respuesta exitosa
+        res.status(200).json({
+            success: true,
+            message: 'Estado de ánimo guardado exitosamente',
+        });
+    } catch (error) {
+        console.error('Error al guardar el estado de ánimo:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al guardar el estado de ánimo',
+        });
+    }
+});
+
 
 // Ruta para obtener estado de ánimo 
 router.get('/mood/:userId', async (req, res) => { 
