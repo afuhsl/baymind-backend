@@ -374,107 +374,215 @@ router.post('/obtenersemana', async (req, res) => {
 });
 
 
-//Obtener estados entre fechas
+// Obtener estados entre fechas específicas
 router.get('/obtenerultimosestados', async (req, res) => {
     try {
         const { email, primerdia, primermes, ultimodia, ultimomes } = req.query;
-        
-        const fechaInicio = new Date(new Date().getFullYear(), primermes - 1, primerdia);
-        fechaInicio.setHours(0, 0, 0, 0);
-        
-        const fechaFin = new Date(new Date().getFullYear(), ultimomes - 1, ultimodia);
-        fechaFin.setHours(23, 59, 59, 999);
-        
-        const user = await User.findByEmail(email);
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        // Validar entrada
+        if (!email || !primerdia || !primermes || !ultimodia || !ultimomes) {
+            return res.status(400).json({
+                success: false,
+                message: 'Por favor, proporciona email, primer día, primer mes, último día y último mes.',
+            });
         }
 
-        const estados = user.cards.filter(card => 
-            card.date >= fechaInicio && card.date <= fechaFin
-        );
-        
-        res.json(estados);
+        // Crear fechas de inicio y fin
+        const fechaInicio = new Date(new Date().getFullYear(), primermes - 1, primerdia);
+        fechaInicio.setHours(0, 0, 0, 0);
+
+        const fechaFin = new Date(new Date().getFullYear(), ultimomes - 1, ultimodia);
+        fechaFin.setHours(23, 59, 59, 999);
+
+        // Verificar que las fechas sean válidas
+        if (fechaInicio > fechaFin) {
+            return res.status(400).json({
+                success: false,
+                message: 'La fecha de inicio debe ser anterior o igual a la fecha de fin.',
+            });
+        }
+
+        // Buscar el usuario por email
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado.',
+            });
+        }
+
+        // Generar todas las fechas entre fechaInicio y fechaFin
+        const fechas = [];
+        let currentDate = new Date(fechaInicio);
+
+        while (currentDate <= fechaFin) {
+            fechas.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Mapear las fechas con los estados de ánimo
+        const estados = fechas.map((fecha) => {
+            const estado = user.cards.find(
+                (card) =>
+                    new Date(card.date).toDateString() === fecha.toDateString()
+            );
+            return {
+                date: fecha.toISOString().split('T')[0], // Formatear la fecha como YYYY-MM-DD
+                mood: estado ? estado.mood : '', // Si no hay estado, devolver vacío
+            };
+        });
+
+        // Responder con los estados
+        res.status(200).json({
+            success: true,
+            estados,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al obtener los estados entre fechas:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener los estados entre fechas.',
+        });
     }
 });
 
-//Obtener últimas 7 semanas del mismo día
+
+// Obtener últimas 7 semanas del mismo día
 router.get('/obtenersemanas', async (req, res) => {
     try {
         const { email, dia, mes } = req.query;
-        
-        // Fecha de referencia
-        const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
-        
-        // Crear array de fechas para las últimas 7 semanas
-        const fechas = [];
-        for (let i = 0; i < 7; i++) {
-            const fecha = new Date(fechaReferencia);
-            fecha.setDate(fecha.getDate() - (i * 7));
-            fechas.push({
-                inicio: new Date(fecha.setHours(0, 0, 0, 0)),
-                fin: new Date(fecha.setHours(23, 59, 59, 999))
+
+        // Validar entrada
+        if (!email || !dia || !mes) {
+            return res.status(400).json({
+                success: false,
+                message: 'Por favor, proporciona email, día y mes.',
             });
         }
-        
-        const user = await User.findByEmail(email);
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        // Crear fecha de referencia
+        const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
+        fechaReferencia.setHours(0, 0, 0, 0);
+
+        // Crear array de fechas para las últimas 7 semanas
+        const semanas = [];
+        for (let i = 0; i < 7; i++) {
+            const inicioSemana = new Date(fechaReferencia);
+            inicioSemana.setDate(fechaReferencia.getDate() - i * 7);
+            const finSemana = new Date(inicioSemana);
+            finSemana.setHours(23, 59, 59, 999);
+
+            semanas.push({
+                inicio: inicioSemana,
+                fin: finSemana,
+                date: inicioSemana.toISOString().split('T')[0], // Formato YYYY-MM-DD
+            });
         }
 
-        // Buscar estados para cada fecha
-        const estados = fechas.map(({ inicio, fin }) => {
-            const estadosDia = user.cards.filter(card => 
-                card.date >= inicio && card.date <= fin
+        // Buscar al usuario por email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado.',
+            });
+        }
+
+        // Mapear las semanas con estados de ánimo
+        const estados = semanas.map(({ inicio, fin, date }) => {
+            const estado = user.cards.find(
+                (card) =>
+                    new Date(card.date) >= inicio && new Date(card.date) <= fin
             );
-            return estadosDia[0] || null; // Devolver el primer estado del día o null
-        }).filter(estado => estado !== null);
-        
-        res.json(estados);
+            return {
+                date,
+                mood: estado ? estado.mood : '', // Si no hay estado, devolver vacío
+            };
+        });
+
+        // Responder con los estados de las últimas 7 semanas
+        res.status(200).json({
+            success: true,
+            estados,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al obtener los estados de las últimas semanas:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener los estados de las últimas semanas.',
+        });
     }
 });
 
-//Obtener últimos 7 meses del mismo día
+
+// Obtener últimos 7 meses del mismo día
 router.get('/obtenermeses', async (req, res) => {
     try {
         const { email, dia, mes } = req.query;
-        
-        // Fecha de referencia
-        const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
-        
-        // Crear array de fechas para los últimos 7 meses
-        const fechas = [];
-        for (let i = 0; i < 7; i++) {
-            const fecha = new Date(fechaReferencia);
-            fecha.setMonth(fecha.getMonth() - i);
-            fechas.push({
-                inicio: new Date(fecha.setHours(0, 0, 0, 0)),
-                fin: new Date(fecha.setHours(23, 59, 59, 999))
+
+        // Validar entrada
+        if (!email || !dia || !mes) {
+            return res.status(400).json({
+                success: false,
+                message: 'Por favor, proporciona email, día y mes.',
             });
         }
-        
-        const user = await User.findByEmail(email);
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        // Crear fecha de referencia
+        const fechaReferencia = new Date(new Date().getFullYear(), mes - 1, dia);
+        fechaReferencia.setHours(0, 0, 0, 0);
+
+        // Crear array de fechas para los últimos 7 meses
+        const meses = [];
+        for (let i = 0; i < 7; i++) {
+            const inicioMes = new Date(fechaReferencia);
+            inicioMes.setMonth(fechaReferencia.getMonth() - i);
+            const finMes = new Date(inicioMes);
+            finMes.setHours(23, 59, 59, 999);
+
+            meses.push({
+                inicio: inicioMes,
+                fin: finMes,
+                date: inicioMes.toISOString().split('T')[0], // Formato YYYY-MM-DD
+            });
         }
 
-        // Buscar estados para cada fecha
-        const estados = fechas.map(({ inicio, fin }) => {
-            const estadosDia = user.cards.filter(card => 
-                card.date >= inicio && card.date <= fin
+        // Buscar al usuario por email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado.',
+            });
+        }
+
+        // Mapear los meses con estados de ánimo
+        const estados = meses.map(({ inicio, fin, date }) => {
+            const estado = user.cards.find(
+                (card) =>
+                    new Date(card.date) >= inicio && new Date(card.date) <= fin
             );
-            return estadosDia[0] || null; // Devolver el primer estado del día o null
-        }).filter(estado => estado !== null);
-        
-        res.json(estados);
+            return {
+                date,
+                mood: estado ? estado.mood : '', // Si no hay estado, devolver vacío
+            };
+        });
+
+        // Responder con los estados de los últimos 7 meses
+        res.status(200).json({
+            success: true,
+            estados,
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al obtener los estados de los últimos meses:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener los estados de los últimos meses.',
+        });
     }
 });
+
 
 
 router.post('/tarjeta', async (req, res) => {
