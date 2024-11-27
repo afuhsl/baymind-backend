@@ -632,7 +632,80 @@ router.post('/estadodia', async (req, res) => {
         });
     }
 });
+// Obtener chat
+router.post('/chat', async (req, res) => {
+    try {
+        const { email, fecha, nombre, mensaje } = req.body;
 
+        // Validamos que se proporcionen todos los datos requeridos
+        if (!fecha || !nombre || !mensaje) {
+            return res.status(400).json({
+                success: false,
+                message: 'La fecha, el nombre y el mensaje son requeridos.'
+            });
+        }
+
+        // Encontrar al usuario por email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado.',
+            });
+        }
+
+        user.chat.push({ date: fecha, from: nombre, message:mensaje });
+
+        // Guardar los cambios en la base de datos
+        await user.save();
+
+        // Respuesta exitosa
+        res.status(200).json({
+            success: true,
+            message: 'Mensaje guardado exitosamente',
+        });
+    } catch (error) {
+        console.error('Error al guardar el mensaje:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al guardar el mensaje',
+        });
+    }
+});
+// Obtener mensajes por email
+router.get('/chat', async (req, res) => {
+    try {
+        const { email } = req.query;  // Obtener email desde los parámetros de la URL
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'El email es requerido.',
+            });
+        }
+
+        // Buscar el usuario por email
+        const user = await User.findByEmail({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado.',
+            });
+        }
+
+        // Devolver los mensajes del usuario
+        res.status(200).json({
+            chat: user.chat,  // Devolvemos los mensajes del usuario
+        });
+    } catch (error) {
+        console.error('Error al obtener los mensajes del usuario:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener los mensajes del usuario.',
+        });
+    }
+});
 
 
 module.exports = router;
