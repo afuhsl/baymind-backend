@@ -41,7 +41,7 @@ router.post('/register', async (req, res) => {
             data: {
                 token,
                 user: {
-                    id: savedUser._id,
+                    id: savedUser.id,
                     email: savedUser.email,
                     password: savedUser.password
                 }
@@ -101,21 +101,13 @@ router.post('/login', async (req, res) => {
 });
 
 //Guardar respuestas
-router.post('/answers',verifyToken, async (req, res) => {
+router.post('/answers', async (req, res) => {
     console.log(req.body);
     try {
-      // Verifica si el token ha sido verificado correctamente en el middleware
-        if (!req.user || !req.user._id) {
-            console.error('Token no verificado correctamente:', req.user);
-            return res.status(401).json({
-            success: false,
-            message: 'Acceso denegado, no se encontró el usuario asociado al token',
-            });
-        }
         
-        const userId = req.user._id;
+        const userId = req.user.id;
         const { answers } = req.body;
-        console.log('Token verificado, userId:', req.user._id); // Verifica el userId del token
+        console.log('Token verificado, userId:', req.user.id); // Verifica el userId del token
 
      // Validación de las respuestas
     if (!answers) {
