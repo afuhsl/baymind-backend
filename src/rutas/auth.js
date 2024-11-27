@@ -622,7 +622,7 @@ router.post('/estadodia', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: { date: fechaBuscada.toISOString().split('T')[0], mood: tarjeta.mood },
+            estados: { date: fechaBuscada.toISOString().split('T')[0], mood: tarjeta.mood },
         });
     } catch (error) {
         console.error('Error al obtener el estado del día:', error);
