@@ -675,7 +675,7 @@ router.post('/chat', async (req, res) => {
 // Obtener mensajes por email
 router.post('/chat', async (req, res) => {
     try {
-        const { email } = req.query;  // Obtener email desde los parámetros de la URL
+        const { email } = req.body;  // Obtener email desde los parámetros de la URL
 
         if (!email) {
             return res.status(400).json({
