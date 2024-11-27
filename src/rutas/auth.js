@@ -633,7 +633,7 @@ router.post('/estadodia', async (req, res) => {
     }
 });
 // Obtener chat
-router.post('/chat', async (req, res) => {
+router.post('/actualizarchat', async (req, res) => {
     try {
         const { email, fecha, nombre, mensaje } = req.body;
 
