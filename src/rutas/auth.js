@@ -25,11 +25,15 @@ router.post('/register', async (req, res) => {
         }
         // Crear nuevo usuario
         const user = new User({
-            name: req.body.name,
             email: req.body.email,
             password: req.body.password
         });
-
+        // Crear y asignar token
+        const token = jwt.sign(
+            { _id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
         // Guardar usuario
         const savedUser = await user.save();
         res.json({
@@ -38,7 +42,6 @@ router.post('/register', async (req, res) => {
                 token,
                 user: {
                     id: savedUser._id,
-                    name: savedUser.name,
                     email: savedUser.email,
                     password: savedUser.password
                 }
