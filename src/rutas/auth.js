@@ -685,7 +685,7 @@ router.post('/chat', async (req, res) => {
         }
 
         // Buscar el usuario por email
-        const user = await User.findByEmail({ email });
+        const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(404).json({
