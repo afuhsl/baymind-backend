@@ -187,10 +187,10 @@ router.post('/mood', async (req, res) => {
         const { email, cards } = req.body;  // Recibimos el email y el estado de ánimo desde el cuerpo de la solicitud
 
         // Verificar que el estado de ánimo se haya proporcionado
-        if (!cards) {
+        if (!cards || !cards.date || !cards.mood) {
             return res.status(400).json({
                 success: false,
-                message: 'El estado de ánimo es requerido',
+                message: 'El estado de ánimo y la fecha son requeridos',
             });
         }
 
@@ -205,14 +205,20 @@ router.post('/mood', async (req, res) => {
             });
         }
 
-        // Crear el nuevo objeto de estado de ánimo
-        const newMood = {
-            date: cards.date,  // Fecha actual
-            mood: cards.mood,        // Estado de ánimo recibido
-        };
+        // Buscar si ya existe un estado de ánimo para esa fecha
+        const existingMoodIndex = user.cards.findIndex(card => card.date.toString() === new Date(cards.date).toString());
 
-        // Agregar el nuevo estado de ánimo al arreglo de 'cards' del usuario
-        user.cards.push(newMood);
+        if (existingMoodIndex !== -1) {
+            // Si ya existe un estado de ánimo para esa fecha, actualizarlo
+            user.cards[existingMoodIndex].mood = cards.mood;
+        } else {
+            // Si no existe, agregar un nuevo estado de ánimo
+            const newMood = {
+                date: new Date(cards.date),  // Fecha recibida
+                mood: cards.mood,            // Estado de ánimo recibido
+            };
+            user.cards.push(newMood);
+        }
 
         // Guardar los cambios en la base de datos
         await user.save();
@@ -220,7 +226,7 @@ router.post('/mood', async (req, res) => {
         // Respuesta exitosa
         res.status(200).json({
             success: true,
-            message: 'Estado de ánimo guardado exitosamente',
+            message: 'Estado de ánimo guardado o actualizado exitosamente',
         });
     } catch (error) {
         console.error('Error al guardar el estado de ánimo:', error);
@@ -230,6 +236,7 @@ router.post('/mood', async (req, res) => {
         });
     }
 });
+
 
 
 // Ruta para obtener estado de ánimo 
