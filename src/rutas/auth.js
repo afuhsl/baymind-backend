@@ -184,7 +184,7 @@ router.get('/answers/:userId', async (req, res) => {
 // Ruta para guardar estado de ánimo
 router.post('/mood', async (req, res) => {
     try {
-        const { email, mood } = req.body;  // Recibimos el email y el estado de ánimo desde el cuerpo de la solicitud
+        const { email, cards } = req.body;  // Recibimos el email y el estado de ánimo desde el cuerpo de la solicitud
 
         // Verificar que el estado de ánimo se haya proporcionado
         if (!mood) {
@@ -207,8 +207,8 @@ router.post('/mood', async (req, res) => {
 
         // Crear el nuevo objeto de estado de ánimo
         const newMood = {
-            date: new Date(),  // Fecha actual
-            mood: mood,        // Estado de ánimo recibido
+            date: cards.date,  // Fecha actual
+            mood: cards.mood,        // Estado de ánimo recibido
         };
 
         // Agregar el nuevo estado de ánimo al arreglo de 'cards' del usuario
