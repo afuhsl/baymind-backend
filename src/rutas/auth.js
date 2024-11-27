@@ -362,7 +362,6 @@ router.post('/obtenersemana', async (req, res) => {
 
         // Responder con los estados de la semana
         res.json({
-            success: true,
             estados: estadosSemana,
         });
     } catch (error) {
@@ -435,7 +434,6 @@ router.post('/obtenerultimosestados', async (req, res) => {
 
         // Responder con los estados
         res.status(200).json({
-            success: true,
             estados,
         });
     } catch (error) {
@@ -503,7 +501,6 @@ router.post('/obtenersemanas', async (req, res) => {
 
         // Responder con los estados de las últimas 7 semanas
         res.status(200).json({
-            success: true,
             estados,
         });
     } catch (error) {
@@ -571,7 +568,6 @@ router.post('/obtenermeses', async (req, res) => {
 
         // Responder con los estados de los últimos 7 meses
         res.status(200).json({
-            success: true,
             estados,
         });
     } catch (error) {
@@ -620,8 +616,6 @@ router.post('/estadodia', async (req, res) => {
 
         if (!tarjeta) {
             return res.status(404).json({
-                success: true,
-                message: 'No hay estado registrado para esta fecha.',
                 data: { date: fechaBuscada.toISOString().split('T')[0], mood: '' },
             });
         }
