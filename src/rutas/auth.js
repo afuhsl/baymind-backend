@@ -585,35 +585,60 @@ router.post('/obtenermeses', async (req, res) => {
 
 
 
-router.post('/tarjeta', async (req, res) => {
+// Obtener el estado de un día específico
+router.post('/estadodia', async (req, res) => {
     try {
-        const { email, dia, mes, estado } = req.body;
+        const { email, dia, mes } = req.body;
 
-        // Encontrar el usuario por ID
-        const user = await User.findByEmail(email);
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
+        // Validar entrada
+        if (!email || !dia || !mes) {
+            return res.status(400).json({
+                success: false,
+                message: 'Por favor, proporciona email, día y mes.',
+            });
         }
 
-        // Crear la tarjeta
-        const date = new Date();
-        date.setDate(dia);
-        date.setMonth(mes - 1);  // Meses en JavaScript son 0-11
+        // Encontrar al usuario por email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado.',
+            });
+        }
 
-        const card = {
-            date: date,
-            mood: estado
-        };
+        // Crear la fecha específica
+        const fechaBuscada = new Date(new Date().getFullYear(), mes - 1, dia);
+        fechaBuscada.setHours(0, 0, 0, 0);
 
-        // Añadir la tarjeta al usuario
-        user.cards.push(card);
-        await user.save();
+        // Buscar tarjeta en las tarjetas del usuario
+        const tarjeta = user.cards.find(
+            (card) =>
+                new Date(card.date).toISOString() ===
+                fechaBuscada.toISOString()
+        );
 
-        res.json({ error: null, data: 'Tarjeta registrada exitosamente' });
+        if (!tarjeta) {
+            return res.status(404).json({
+                success: true,
+                message: 'No hay estado registrado para esta fecha.',
+                data: { date: fechaBuscada.toISOString().split('T')[0], mood: '' },
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: { date: fechaBuscada.toISOString().split('T')[0], mood: tarjeta.mood },
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al obtener el estado del día:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener el estado del día.',
+        });
     }
 });
+
 
 
 module.exports = router;
