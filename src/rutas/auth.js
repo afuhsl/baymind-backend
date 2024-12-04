@@ -108,13 +108,6 @@ router.post('/answers', async (req, res) => {
         const { email, answers } = req.body;
         console.log('Datos recibidos:', email, answers);
 
-        // Validación de las respuestas
-        if (!email || !answers || answers.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Formato de respuestas inválido o incompleto. Por favor, asegúrese de enviar todos los campos requeridos.',
-            });
-        }
 
         // Buscar el usuario en la base de datos por el email
         const user = await User.findByEmail(email);  // Asume que tienes un método para buscar por email
